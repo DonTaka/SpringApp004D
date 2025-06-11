@@ -1,7 +1,8 @@
 package com.example.SpringApp004D.Controller;
 
 
-import com.example.SpringApp004D.Model.User;
+import com.example.SpringApp004D.Assemblers.UserModelAssembler;
+import com.example.SpringApp004D.Model.Usuario;
 import com.example.SpringApp004D.Service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -10,8 +11,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,18 +28,21 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    @Autowired
+    UserModelAssembler assembler;
+
     @GetMapping
     @Operation(summary = "Obtener Usuarios",description = "Obtiene la lista completa de usuarios registrados en sistema")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200",description = "Retorna lista completa de usuarios"),
             @ApiResponse(responseCode = "404",description = "No se encuentran datos")
     })
-    public ResponseEntity<List<User>> getAllUsers(){
-        List<User> lista = userService.getAllUsers();
+    public ResponseEntity<CollectionModel<EntityModel<Usuario>>> getAllUsers(){
+        List<Usuario> lista = userService.getAllUsers();
         if(lista.isEmpty()){
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }else{
-            return new ResponseEntity<>(lista,HttpStatus.OK);
+            return new ResponseEntity<>(assembler.toCollectionModel(lista),HttpStatus.OK);
         }
     }
 
@@ -48,10 +53,10 @@ public class UserController {
             @ApiResponse(responseCode = "404",description = "No se encuentran datos")
     })
     @Parameter(description = "El ID del usuario", example = "123")
-    public ResponseEntity<User> getUserById(@PathVariable int id){
-        User us = userService.getUserById(id);
+    public ResponseEntity<EntityModel<Usuario>> getUserById(@PathVariable int id){
+        Usuario us = userService.getUserById(id);
         if(us!=null){
-            return new ResponseEntity<>(us,HttpStatus.OK);
+            return new ResponseEntity<>(assembler.toModel(us),HttpStatus.OK);
         }else{
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -62,10 +67,10 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",description = "Usuario creado",
                          content = @Content(mediaType = "application/json",
-                                            schema = @Schema(implementation = User.class))),
+                                            schema = @Schema(implementation = Usuario.class))),
             @ApiResponse(responseCode = "204",description = "No hay contenido en la solicitud")
     })
-    public ResponseEntity<User> addUser(@RequestBody User user){
+    public ResponseEntity<Usuario> addUser(@RequestBody Usuario user){
         userService.addUser(user);
         if(userService.getUserById(user.getId())!=null){
             return new ResponseEntity<>(user,HttpStatus.CREATED);
@@ -95,11 +100,11 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201",description = "Usuario creado",
                     content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = User.class))),
+                            schema = @Schema(implementation = Usuario.class))),
             @ApiResponse(responseCode = "204",description = "No hay contenido en la solicitud")
     })
     @Parameter(description = "El ID del usuario", example = "123")
-    public ResponseEntity<User> updateUser(@PathVariable int id,@RequestBody User user){
+    public ResponseEntity<Usuario> updateUser(@PathVariable int id, @RequestBody Usuario user){
         if(userService.getUserById(id)!=null){
             userService.updateUser(id,user);
             return  new ResponseEntity<>(user,HttpStatus.OK);

@@ -1,6 +1,6 @@
 package com.example.SpringApp004D.Service;
 
-import com.example.SpringApp004D.Model.User;
+import com.example.SpringApp004D.Model.Usuario;
 import com.example.SpringApp004D.Repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,7 +13,7 @@ public class UserService {
     @Autowired
     UserRepository userRepository;
 
-    public User addUser(User user) {
+    public Usuario addUser(Usuario user) {
         return userRepository.save(user);
     }
 
@@ -21,16 +21,16 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public List<User> getAllUsers() {
+    public List<Usuario> getAllUsers() {
         return userRepository.findAll();
     }
 
-    public User getUserById(int id) {
+    public Usuario getUserById(int id) {
         return userRepository.findById(id).get();
     }
 
-    public User updateUser(int id, User user) {
-        User us =  userRepository.findById(id).get();
+    public Usuario updateUser(int id, Usuario user) {
+        Usuario us =  userRepository.findById(id).get();
         us.setUsername(user.getUsername());
         us.setPassword(user.getPassword());
         us.setEmail(user.getEmail());
